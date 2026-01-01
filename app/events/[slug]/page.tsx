@@ -1,6 +1,6 @@
 const EventDetailsPage = () => {
   return (
-    <div>EventDetailsPage</div>
+    <div>Event Details Page</div>
   )
 }
 
