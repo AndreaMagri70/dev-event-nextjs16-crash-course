@@ -1,14 +1,17 @@
 import EventCard from '@/components/EventCard';
 import ExploreBtn from '@/components/ExploreBtn';
 import { IEvent } from '@/database';
-
+import connectDB from '@/lib/mongodb'; // Funzione di connessione
+import Event from '@/database/event.model'; // Modello Mongoose
 import React from 'react';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
 const Page = async () => {
-  const response = await fetch(`${BASE_URL}/api/events`);
-  const { events } = await response.json();
+  // 1. Connessione diretta al DB
+  await connectDB();
+  
+  // 2. Recupero dati diretto (più veloce di fetch)
+  // Usiamo .lean() per trasformare il documento Mongoose in un oggetto JS semplice
+  const events = await Event.find({}).lean();
 
   return (
     <section>
@@ -21,16 +24,19 @@ const Page = async () => {
         <h3>Featured Events</h3>
 
         <ul className='events list-none my-6' id='events'>
-          {events && events.length > 0 && events.map((event: IEvent) => (
-            <li key={event.title}>
-              <EventCard {...event } />
-            </li>
-
-          ))}
+          {events && events.length > 0 ? (
+            events.map((event: any) => (
+              <li key={event._id.toString()}>
+                <EventCard {...JSON.parse(JSON.stringify(event))} />
+              </li>
+            ))
+          ) : (
+            <p>No events found.</p>
+          )}
         </ul>
       </div>
     </section>
-  )
+  );
 }
 
 export default Page;
