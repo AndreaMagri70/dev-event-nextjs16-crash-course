@@ -2,6 +2,7 @@ import connectDB from '@/lib/mongodb';
 import Event from '@/database/event.model';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import BookEvent from '@/components/BookEvent'
 
 interface Props {
   params: Promise<{ slug: string }>; // In Next.js 15+ params è una Promise
@@ -16,13 +17,21 @@ const EventDetailItem = ({ icon, alt, label }: { icon: string; alt: string; labe
 )
 
 const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => (
-  <div className='agenda mt-8'>
-    <h2 className="text-2xl font-bold">Agenda</h2>
+  <div className='agenda'>
+    <h2 className="text-2xl">Agenda</h2>
     <ul className="list-disc pl-5 mt-4">
       {agendaItems.map((item, index) => (
         <li key={index} className="mb-2 text-gray-200">{item}</li>
       ))}
     </ul>
+  </div>
+)
+
+const EventTags = ({ tags }: { tags: string[] }) => (
+  <div className='flex flex-row gap-2 flex-wrap'>
+    {tags.map((tag) => (
+      <div className='pill' key={tag}>{tag}</div>
+    ))}
   </div>
 )
 
@@ -44,11 +53,16 @@ export default async function EventDetailPage({ params }: Props) {
   // 5. Serializza i dati (converte ObjectId e Date in stringhe per i componenti)
   const serializedEvent = JSON.parse(JSON.stringify(event));
 
+  const bookings = 10;
+
   return (
-    <main className="container mx-auto py-10">
+    // <main className="container mx-auto py-10">
+  <main className='flex flex-col md:flex-row w-full gap-8 p-6'>
+
+    <div className="w-full md:w-2/3 ">
       <div className='header'>
         <h1>{serializedEvent.title}</h1>        
-        <p className='mt-2'>{serializedEvent.description}</p>
+        <p className='mt-2 w-full md:w-4/5'>{serializedEvent.description}</p>
       </div>
 
       <div className='details'>
@@ -72,22 +86,45 @@ export default async function EventDetailPage({ params }: Props) {
           <section className='flex-col-gap-2 mt-2'>
 
             {/* 2. RICHIAMO DEL COMPONENTE QUI */}
-            {/* Passiamo l'array data.agenda alla prop agendaItems */}
+            {/* Passiamo l'array serializedEvent.agenda alla prop agendaItems */}
             {serializedEvent.agenda && serializedEvent.agenda.length > 0 && (
               <EventAgenda agendaItems={serializedEvent.agenda} />
             )}
           </section>
 
+          <section className='flex-col-gap-2 mt-2'>
+            <h2 className='text-2xl'>About Organizer</h2>
+            <p>{serializedEvent.organizer}</p>
+          </section>
 
-
-        </div>
-
-        {/* Right Side - Booking Form */}
-        <aside className='booking'>
-          <p className='text-lg font-semibold'>Book Event</p>
-        </aside>
+          <section className='flex-col-gap-2 mt-2'>
+            <h2 className='text-2xl'>TAGS</h2>
+            <EventTags tags={serializedEvent.tags}/>
+          </section>
+        </div>    
 
       </div>
-    </main>
+    </div>
+
+      {/* Right Side - Booking Form */}
+        <aside className="w-full md:w-1/3">
+          <div className='signup-card sticky top-70 bg-cyan-900 p-3 rounded-[7px]'>
+            <h2 className='text-xl font-bold'>Book Your Spot</h2>
+            {bookings > 0 ? (
+              <p className='text-sm mb-4'>
+                Join the other {bookings} people!
+                </p>
+            ): (
+              <p className='text-sm mb-4'>
+                Be the Firts to book a Spot!
+              </p>
+            )}
+            <BookEvent />
+          </div>          
+        </aside>
+
+    </main>    
   );
+
+  
 }
